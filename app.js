@@ -72,5 +72,25 @@ app.get('/download/:filename', (req, res) => {
           }
 });
 
+app.get('/event' , (req, res) => {
+          try{
+                    let count = 0;
+                    res.writeHead(200, {
+                              'Cache-Control': 'no-cache',
+                              'Connection': "keep-alive",
+                              'Content-Type': 'text/event-stream', 
+                    });
+                    setInterval(() => {
+                              count += 1;
+                              obj = {count};
+                              console.log(count);
+                              res.status(200).write(`data: ${JSON.stringify(obj)}\n\n`);
+                              // res.write(` ${JSON.stringify(obj)}\n\n`);
+                    }, 5000);
+          }
+          catch (e) {
+                    res.status(400).send(e);
+          }
+})
 
 module.exports = app;
