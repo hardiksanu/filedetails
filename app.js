@@ -8,7 +8,6 @@ const fs = require('fs');
 const ls = require('ls');
 const prettysize = require('prettysize');
 const directory = path.join('C:/Users/Hardik/Desktop/Text_file/');
-// const savepath = path.join('./download');
 const cors = require('cors');
 
 // to use json data in express app. through use of postman and get in this app, we needs to get permission from express app.
@@ -95,18 +94,18 @@ app.get('/event' , (req, res) => {
           }
 })
 */
-app.get('/event' , async (req, res) => {
-          try{
+app.get('/event', async (req, res) => {
+          try {
                     let count = 0;
                     console.log("Client Connected");
                     res.writeHead(200, {
                               'Cache-Control': 'no-cache',
                               'Connection': "keep-alive",
-                              'Content-Type': 'text/event-stream', 
+                              'Content-Type': 'text/event-stream',
                     });
                     const intervalID = await setInterval(() => {
                               count += 1;
-                              obj = {count};
+                              obj = { count };
                               console.log(count);
                               // const data = new Date().toLocaleString();
                               // console.log(data);
@@ -127,7 +126,7 @@ app.get('/event' , async (req, res) => {
 app.get('/start', (req, res) => {
           try {
                     console.log(req.body);
-                      res.status(200).send("Application started successfully.");
+                    res.status(200).send("Application started successfully.");
           }
           catch (e) {
                     res.status(400).send(e);
