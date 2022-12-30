@@ -1,6 +1,7 @@
 require("dotenv").config();
 //importing user context
 const express = require("express");
+const bodyParser = require('body-parser');
 const app = express();
 const path = require('path');
 // const download = require('download');
@@ -12,8 +13,11 @@ const cors = require('cors');
 
 // to use json data in express app. through use of postman and get in this app, we needs to get permission from express app.
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: '*' }));
 
+let event_res;
+let event_data = undefined;
 app.get('/file', (req, res) => {
           fs.readdir(directory, (err) => {
                     if (err) {
@@ -70,52 +74,22 @@ app.get('/download/:filename', (req, res) => {
                     res.status(400).send(e);
           }
 });
-/*
-app.get('/event' , (req, res) => {
-          try{
-                    // let count = 0;
-                    res.writeHead(200, {
-                              'Cache-Control': 'no-cache',
-                              'Connection': "keep-alive",
-                              'Content-Type': 'text/event-stream', 
-                    });
-                    setInterval(() => {
-                              // count += 1;
-                              // obj = {count};
-                              // console.log(count);
-                              const data = new Date().toLocaleString();
-                              console.log(data);
-                              // res.status(200).write(`data: ${JSON.stringify(obj)}\n\n`);
-                              res.status(200).write(`data: ${data}\n\n`);
-                    }, 5000);
-          }
-          catch (e) {
-                    res.status(400).send(e);
-          }
-})
-*/
-app.get('/event', async (req, res) => {
+
+app.get('/event', (req, res) => {
+          event_res = res;
           try {
-                    let count = 0;
                     console.log("Client Connected");
                     res.writeHead(200, {
                               'Cache-Control': 'no-cache',
                               'Connection': "keep-alive",
                               'Content-Type': 'text/event-stream',
                     });
-                    const intervalID = await setInterval(() => {
-                              count += 1;
-                              obj = { count };
-                              console.log(count);
-                              // const data = new Date().toLocaleString();
-                              // console.log(data);
-                              res.status(200).write(`data: ${JSON.stringify(obj)}\n\n`);
-                              // res.status(200).write(`data: ${data}\n\n`);
-                    }, 10000);
+                    console.log(event_data);
+                    res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
 
                     res.on('close', () => {
-                              console.log("Client closed connection");
-                              clearInterval(intervalID);
+                              console.log("Client has closed the connection");
+                              event_res = undefined;
                     });
           }
           catch (e) {
@@ -123,9 +97,24 @@ app.get('/event', async (req, res) => {
           };
 });
 
+app.post('/create', (req, res) => {
+          const { Battery_Voltage, Frequency , Temperature , Odo_Count1, Odo_Count2, Odo_Count3 } = (req.body);
+          console.log(req.body, event_res !== undefined);
+          if (!( Battery_Voltage && Frequency && Temperature && Odo_Count1 && Odo_Count2 && Odo_Count3)) {
+                    res.status(400).send("All data is required.");
+          }
+          else if (event_res !== undefined) {
+                    console.log("Client connected so sending data")
+                    event_data = { ...req.body }
+                    event_res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
+                    res.status(200).send();
+          }
+
+});
 app.get('/start', (req, res) => {
           try {
-                    console.log(req.body);
+                    let { data } = req.body;
+                    console.log('Body-data:', data);
                     res.status(200).send("Application started successfully.");
           }
           catch (e) {
@@ -134,26 +123,9 @@ app.get('/start', (req, res) => {
           }
 
 });
-app.get('/stop', (req, res) => {
-          try {
-                    console.log(req.body);
-                    res.status(200).send("Application stopped successfully.");
-          }
-          catch (e) {
-                    res.status(400).send(e);
 
-          }
-
-});
-
-app.post('/create', (req, res) => {
-          try {
-                    console.log(req.body);
-                    res.status(200).send(req.body);
-          }
-          catch (e) {
-                    res.status(400).send(e);
-
-          }
-});
+app.post('/post/:freqData', (req, res) => {
+          let value =  req.params.freqData;
+          console.log("freqData: " , value);
+})
 module.exports = app;
