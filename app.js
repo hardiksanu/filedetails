@@ -4,7 +4,6 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const app = express();
 const path = require('path');
-// const download = require('download');
 const fs = require('fs');
 const ls = require('ls');
 const prettysize = require('prettysize');
@@ -67,27 +66,7 @@ app.get('/download/:filename', async (req, res) => {
 
           stream.pipe(res);
 });
-/*
-app.get('/download/:filename', (req, res) => {
-          try {
-                    let filename = req.params.filename;
-                    console.log("filename:", filename);
-                    res.download(directory + "/" + filename, (err) => {
-                              if (err) {
-                                        res.status(500).send({
-                                                  message: "Unable to downlaod the file" + err,
-                                        });
-                              }
-                              else {
-                                        console.log("File download successfully");
-                              }
-                    });
-          }
-          catch (e) {
-                    res.status(400).send(e);
-          }
-});
-*/
+
 app.get('/event', (req, res) => {
           event_res = res;
           try {
@@ -151,11 +130,7 @@ app.get('/stop', (req, res) => {
 
 });
 
-// app.get('/frequency/:freqData', (req, res) => {
 app.post('/frequency', (req, res) => {
-          // let value = req.params.freqData;
-          // let { freqData } = req.body;
-          // console.log("freqData: ", freqData);
           frequency_data = { ...req.body };
           console.log(frequency_data);
           res.status(200).write(`${JSON.stringify(frequency_data.freqData)}\n\n`);
