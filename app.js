@@ -1,5 +1,4 @@
 require("dotenv").config();
-//importing user context
 const express = require("express");
 const bodyParser = require('body-parser');
 const app = express();
@@ -10,7 +9,6 @@ const prettysize = require('prettysize');
 const directory = path.join('C:/Users/Hardik/Desktop/Text_file/');
 const cors = require('cors');
 
-// to use json data in express app. through use of postman and get in this app, we needs to get permission from express app.
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: '*' }));
@@ -26,9 +24,7 @@ app.get('/file', (req, res) => {
                     else {
 
                               const filedetailsindir = [];
-                              for (let fileindir of ls(directory + "*")) {
-                                        // console.log(`${fileindir.name} ${prettysize(fileindir.stat.size)}`); 
-                                        // filedetailsindir.push({filename : fileindir , size: prettysize(fileindir.stat.size)});       
+                              for (let fileindir of ls(directory + "*")) {      
                                         filedetailsindir.push({ filename: fileindir.file, size: prettysize(fileindir.stat.size) });
                               }
                               return res.status(200).json(filedetailsindir);
@@ -38,7 +34,6 @@ app.get('/file', (req, res) => {
 });
 app.delete('/delete', (req, res) => {
           try {
-                    // console.log(req.body);
                     let { filename } = req.body;
                     console.log("filename:", filename);
                     fs.unlink(directory + "/" + filename, (err) => {
@@ -59,8 +54,6 @@ app.get('/download/:filename', async (req, res) => {
           let filename = req.params.filename;
           console.log("filename:", filename);
           const stream = fs.createReadStream(directory + "/" + filename);
-          // const stream = fs.createReadStream(`${directory} + "/" + filename`);
-
           res.setHeader('Content-Type', 'application/bin');
           res.setHeader('Content-Disposition', `inline; filename= ${filename}`);
 
