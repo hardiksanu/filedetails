@@ -17,6 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: '*' }));
 
 let event_res;
+let frequency_data, frequency_res;
 let event_data = undefined;
 app.get('/file', (req, res) => {
           fs.readdir(directory, (err) => {
@@ -55,6 +56,18 @@ app.delete('/delete', (req, res) => {
           }
 });
 
+app.get('/download/:filename', async (req, res) => {
+          let filename = req.params.filename;
+          console.log("filename:", filename);
+          const stream = fs.createReadStream(directory + "/" + filename);
+          // const stream = fs.createReadStream(`${directory} + "/" + filename`);
+
+          res.setHeader('Content-Type', 'application/bin');
+          res.setHeader('Content-Disposition', `inline; filename= ${filename}`);
+
+          stream.pipe(res);
+});
+/*
 app.get('/download/:filename', (req, res) => {
           try {
                     let filename = req.params.filename;
@@ -74,7 +87,7 @@ app.get('/download/:filename', (req, res) => {
                     res.status(400).send(e);
           }
 });
-
+*/
 app.get('/event', (req, res) => {
           event_res = res;
           try {
@@ -98,9 +111,9 @@ app.get('/event', (req, res) => {
 });
 
 app.post('/create', (req, res) => {
-          const { Battery_Voltage, Frequency , Temperature , Odo_Count1, Odo_Count2, Odo_Count3 } = (req.body);
+          const { Battery_Voltage, Frequency, Temperature, Odo_Count1, Odo_Count2, Odo_Count3 } = (req.body);
           console.log(req.body, event_res !== undefined);
-          if (!( Battery_Voltage && Frequency && Temperature && Odo_Count1 && Odo_Count2 && Odo_Count3)) {
+          if (!(Battery_Voltage && Frequency && Temperature && Odo_Count1 && Odo_Count2 && Odo_Count3)) {
                     res.status(400).send("All data is required.");
           }
           else if (event_res !== undefined) {
@@ -110,11 +123,12 @@ app.post('/create', (req, res) => {
                     res.status(200).send();
           }
 
+
 });
 app.get('/start', (req, res) => {
           try {
-                    let { data } = req.body;
-                    console.log('Body-data:', data);
+                    let { request_data } = req.body;
+                    console.log('Body-data:', request_data);
                     res.status(200).send("Application started successfully.");
           }
           catch (e) {
@@ -124,8 +138,29 @@ app.get('/start', (req, res) => {
 
 });
 
-app.post('/post/:freqData', (req, res) => {
-          let value =  req.params.freqData;
-          console.log("freqData: " , value);
-})
+app.get('/stop', (req, res) => {
+          try {
+                    let { body_data } = req.body;
+                    console.log('Body-data:', body_data);
+                    res.status(200).send("Please stop the application.");
+          }
+          catch (e) {
+                    res.status(400).send(e);
+
+          }
+
+});
+
+// app.get('/frequency/:freqData', (req, res) => {
+app.post('/frequency', (req, res) => {
+          // let value = req.params.freqData;
+          // let { freqData } = req.body;
+          // console.log("freqData: ", freqData);
+          frequency_data = { ...req.body };
+          console.log(frequency_data);
+          res.status(200).write(`${JSON.stringify(frequency_data.freqData)}\n\n`);
+          res.status(200).send();
+
+});
+
 module.exports = app;
