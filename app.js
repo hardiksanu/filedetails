@@ -38,17 +38,14 @@ app.delete('/delete', (req, res) => {
           try {
                     let { filename } = req.body;
                     console.log("filename:", filename);
-                    fs.unlink(d
-
-
-                              , (err) => {
-                                        if (err) {
-                                                  res.status(200).send(err);
-                                        }
-                                        else {
-                                                  res.status(200).send("File deleted successfully.");
-                                        }
-                              });
+                    fs.unlink(directory + "/" + filename, (err) => {
+                              if (err) {
+                                        res.status(200).send(err);
+                              }
+                              else {
+                                        res.status(200).send("File deleted successfully.");
+                              }
+                    });
           }
           catch (e) {
                     res.status(400).send(e);
@@ -74,7 +71,6 @@ app.get('/event', (req, res) => {
                               'Connection': "keep-alive",
                               'Content-Type': 'text/event-stream',
                     });
-                    console.log(event_data);
                     res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
 
                     res.on('close', () => {
@@ -88,47 +84,65 @@ app.get('/event', (req, res) => {
 });
 app.post('/create', (req, res) => {
           const { Battery_Voltage, Frequency, Temperature, Odo_Count1, Odo_Count2, Odo_Count3 } = (req.body);
-          console.log(req.body, event_res !== undefined);
           if (!(Battery_Voltage && Frequency && Temperature && Odo_Count1 && Odo_Count2 && Odo_Count3)) {
                     res.status(400).send("All data is required.");
           }
           else if (event_res !== undefined) {
                     console.log("Client connected so sending data")
                     event_data = { ...req.body }
-                    console.log(event_data);
                     event_res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
-                    // console.log(event_res);
                     res.status(200).send();
           }
-
-
 });
 app.post('/start', (req, res) => {
-           let start_board = { ...req.body };
-                    console.log('Body-data:', start_board.key);
-                    // if (!(start_data)){
-                    //           res.status(400).send("Board is already started");
-                    // }
-                    res.status(200).send("Application started successfully.");    
+          start_board = { ...req.body };
+          console.log('Body-data:', start_board.key);
+          if ((start_board !== undefined)) {
+                    res.status(200).write(`${JSON.stringify(start_board)}\n\n`);
+                    res.status(200).send();
+          }
 });
 
+app.get('/startboard', (req, res) => {
+          try{
+                    res.status(200).json(start_board.key * 1);
+                    res.on('close', () => {
+                              console.log("Connection closed after send the message");
+                              start_board.key = 2;
+                    });
+          }
+          catch (e) {
+                    res.status(400).send(e);
+          };
+});
 app.post('/stop', (req, res) => {
-                    let stop_data = { ...req.body };
-                    console.log('Body-data:', stop_data.key);
-                    res.status(200).send("Please stop the application.");
-
+          stop_board = { ...req.body };
+          console.log('Body-data:', stop_board.key);
+          if ((stop_board !== undefined)) {
+                    res.status(200).write(`${JSON.stringify(stop_board)}\n\n`);
+                    res.status(200).send();
+          }
+});
+app.get('/stopboard', (req, res) => {
+          try{
+                    res.status(200).json(stop_board.key * 1);
+                    res.on('close', () => {
+                              console.log("Connection close after stop the board");
+                              stop_board.key = 2;
+                    });
+          }
+          catch(e){
+                    res.status(400).send(e);
+          }
 });
 
 app.get('/freq', (req, res) => {
           try {
                     console.log("Connected for send the freq");
-                    // console.log(freq_data);
-                    // console.log(freq_data.freqData);
                     res.status(200).json(freq_data.freqData * 1);
-
                     res.on('close', () => {
                               console.log("Connection closed after send the freq.");
-                    })
+                    });
           }
           catch (e) {
                     res.status(400).send(e);
@@ -136,12 +150,10 @@ app.get('/freq', (req, res) => {
 });
 app.post('/frequency', (req, res) => {
           freq_data = { ...req.body };
-          // console.log(freq_data, freq_data.freqData * 1);
-          if (freq_data !== undefined){
-          res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
-          res.status(200).send();
+          if (freq_data !== undefined) {
+                    res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
+                    res.status(200).send();
           }
 });
-
 
 module.exports = app;
