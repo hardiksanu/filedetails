@@ -2,9 +2,10 @@
 const http = require('http');
 const app = require('./app');
 const server = http.createServer(app);
-const port = process.env.PORT || API_PORT;
+const API_PORT = 9090;
+// const port = process.env.PORT || API_PORT;
 
 //SERVER LISTENING
-server.listen(port, ()=> {
-          console.log(`server running on port ${port}`);
+server.listen(API_PORT, ()=> {
+          console.log(`server running on port ${API_PORT}`);
 });

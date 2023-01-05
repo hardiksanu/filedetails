@@ -6,8 +6,13 @@ const path = require('path');
 const fs = require('fs');
 const ls = require('ls');
 const prettysize = require('prettysize');
-const directory = path.join('C:/Users/Hardik/Desktop/Text_file/');
+// const directory = path.join('C:/Users/Hardik/Desktop/Text_file/');
+const directory = path.join('C:', 'Users', 'Hardik', 'Desktop', 'Text_file', "/");
+
+// console.log(directory);
 const cors = require('cors');
+const { dir } = require("console");
+
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,6 +21,7 @@ app.use(cors({ origin: '*' }));
 let event_res;
 let event_data = undefined;
 let freq_data = undefined;
+let date_time = undefined;
 
 app.get('/file', (req, res) => {
           fs.readdir(directory, (err) => {
@@ -26,8 +32,9 @@ app.get('/file', (req, res) => {
 
                               const filedetailsindir = [];
                               for (let fileindir of ls(directory + "*")) {
+                                        // console.log(`${fileindir.name} ${prettysize(fileindir.stat.size)}`); 
+                                        // filedetailsindir.push({filename : fileindir , size: prettysize(fileindir.stat.size)});       
                                         filedetailsindir.push({ filename: fileindir.file, size: prettysize(fileindir.stat.size) });
-                                        // console.log(filedetailsindir);
                               }
                               return res.status(200).json(filedetailsindir);
                     }
@@ -52,14 +59,37 @@ app.delete('/delete', (req, res) => {
           }
 });
 
+app.get('/deleteall', (req, res) => {
+          try {
+                    for (let fileindir of ls(path.join(directory, "*"))) {
+                              fname = path.join(fileindir.path, fileindir.file);
+                              fs.unlink(fname, () => {
+                              });
+                    }
+                    return res.status(200).send("All files deleted successfully");
+          }
+          catch (e) {
+                    res.status(400).send(e);
+          }
+});
+
 app.get('/download/:filename', async (req, res) => {
           let filename = req.params.filename;
           console.log("filename:", filename);
           const stream = fs.createReadStream(directory + "/" + filename);
           res.setHeader('Content-Type', 'application/bin');
           res.setHeader('Content-Disposition', `inline; filename= ${filename}`);
-
+          
           stream.pipe(res);
+});
+
+app.get('/downloadAll', (req, res) => {
+          // const stream = fs.createWriteStream(directory + "*");
+          console.log(directory + "/");
+          console.log(path.join(directory));
+          res.setHeader('Content-Type', 'application/bin');
+
+          // stream.pipe(res);
 });
 
 app.get('/event', (req, res) => {
@@ -104,7 +134,7 @@ app.post('/start', (req, res) => {
 });
 
 app.get('/startboard', (req, res) => {
-          try{
+          try {
                     res.status(200).json(start_board.key * 1);
                     res.on('close', () => {
                               console.log("Connection closed after send the message");
@@ -124,14 +154,14 @@ app.post('/stop', (req, res) => {
           }
 });
 app.get('/stopboard', (req, res) => {
-          try{
+          try {
                     res.status(200).json(stop_board.key * 1);
                     res.on('close', () => {
                               console.log("Connection close after stop the board");
                               stop_board.key = 2;
                     });
           }
-          catch(e){
+          catch (e) {
                     res.status(400).send(e);
           }
 });
@@ -142,6 +172,7 @@ app.get('/freq', (req, res) => {
                     res.status(200).json(freq_data.freqData * 1);
                     res.on('close', () => {
                               console.log("Connection closed after send the freq.");
+                              freq_data.freqData = 0;
                     });
           }
           catch (e) {
@@ -150,10 +181,25 @@ app.get('/freq', (req, res) => {
 });
 app.post('/frequency', (req, res) => {
           freq_data = { ...req.body };
+          // console.log(freq_data);
+          console.log(freq_data, freq_data.freqData * 1);
           if (freq_data !== undefined) {
                     res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
                     res.status(200).send();
           }
 });
 
+app.post('/timer', (req, res) => {
+          date_time = { ...req.body };
+          console.log("Date_Time:",date_time.date, date_time.time);
+          if(date_time !== undefined) {
+                    res.status(200).send("Successfully set date and time");
+          }   
+
+
+          
+});
+app.get('/datetime', (req, res) => {
+          res.status(200).json(date_time.date, date_time.time * 1);
+})
 module.exports = app;
