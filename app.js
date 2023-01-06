@@ -9,7 +9,6 @@ const prettysize = require('prettysize');
 // const directory = path.join('C:/Users/Hardik/Desktop/Text_file/');
 const directory = path.join('C:', 'Users', 'Hardik', 'Desktop', 'Text_file', "/");
 
-// console.log(directory);
 const cors = require('cors');
 const { dir } = require("console");
 
@@ -21,7 +20,7 @@ app.use(cors({ origin: '*' }));
 let event_res;
 let event_data = undefined;
 let freq_data = undefined;
-let date_time = undefined;
+let date_time;
 
 app.get('/file', (req, res) => {
           fs.readdir(directory, (err) => {
@@ -85,8 +84,8 @@ app.get('/download/:filename', async (req, res) => {
 
 app.get('/downloadAll', (req, res) => {
           // const stream = fs.createWriteStream(directory + "*");
-          console.log(directory + "/");
-          console.log(path.join(directory));
+          // console.log(directory + "/");
+          // console.log(path.join(directory));
           res.setHeader('Content-Type', 'application/bin');
 
           // stream.pipe(res);
@@ -95,7 +94,7 @@ app.get('/downloadAll', (req, res) => {
 app.get('/event', (req, res) => {
           event_res = res;
           try {
-                    console.log("Client Connected");
+                    // console.log("Client Connected");
                     res.writeHead(200, {
                               'Cache-Control': 'no-cache',
                               'Connection': "keep-alive",
@@ -104,7 +103,7 @@ app.get('/event', (req, res) => {
                     res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
 
                     res.on('close', () => {
-                              console.log("Client has closed the connection");
+                              // console.log("Client has closed the connection");
                               event_res = undefined;
                     });
           }
@@ -118,7 +117,7 @@ app.post('/create', (req, res) => {
                     res.status(400).send("All data is required.");
           }
           else if (event_res !== undefined) {
-                    console.log("Client connected so sending data")
+                    // console.log("Client connected so sending data");
                     event_data = { ...req.body }
                     event_res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
                     res.status(200).send();
@@ -126,7 +125,7 @@ app.post('/create', (req, res) => {
 });
 app.post('/start', (req, res) => {
           start_board = { ...req.body };
-          console.log('Body-data:', start_board.key);
+          // console.log('Body-data:', start_board.key);
           if ((start_board !== undefined)) {
                     res.status(200).write(`${JSON.stringify(start_board)}\n\n`);
                     res.status(200).send();
@@ -137,7 +136,7 @@ app.get('/startboard', (req, res) => {
           try {
                     res.status(200).json(start_board.key * 1);
                     res.on('close', () => {
-                              console.log("Connection closed after send the message");
+                              // console.log("Connection closed after send the message");
                               start_board.key = 2;
                     });
           }
@@ -147,7 +146,7 @@ app.get('/startboard', (req, res) => {
 });
 app.post('/stop', (req, res) => {
           stop_board = { ...req.body };
-          console.log('Body-data:', stop_board.key);
+          // console.log('Body-data:', stop_board.key);
           if ((stop_board !== undefined)) {
                     res.status(200).write(`${JSON.stringify(stop_board)}\n\n`);
                     res.status(200).send();
@@ -157,7 +156,7 @@ app.get('/stopboard', (req, res) => {
           try {
                     res.status(200).json(stop_board.key * 1);
                     res.on('close', () => {
-                              console.log("Connection close after stop the board");
+                              // console.log("Connection close after stop the board");
                               stop_board.key = 2;
                     });
           }
@@ -168,10 +167,10 @@ app.get('/stopboard', (req, res) => {
 
 app.get('/freq', (req, res) => {
           try {
-                    console.log("Connected for send the freq");
+                    // console.log("Connected for send the freq");
                     res.status(200).json(freq_data.freqData * 1);
                     res.on('close', () => {
-                              console.log("Connection closed after send the freq.");
+                              // console.log("Connection closed after send the freq.");
                               freq_data.freqData = 0;
                     });
           }
@@ -182,7 +181,7 @@ app.get('/freq', (req, res) => {
 app.post('/frequency', (req, res) => {
           freq_data = { ...req.body };
           // console.log(freq_data);
-          console.log(freq_data, freq_data.freqData * 1);
+          // console.log(freq_data, freq_data.freqData * 1);
           if (freq_data !== undefined) {
                     res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
                     res.status(200).send();
@@ -191,15 +190,18 @@ app.post('/frequency', (req, res) => {
 
 app.post('/timer', (req, res) => {
           date_time = { ...req.body };
-          console.log("Date_Time:",date_time.date, date_time.time);
+          // console.log("Date_Time:",date_time.dateTime);
           if(date_time !== undefined) {
-                    res.status(200).send("Successfully set date and time");
+                    res.status(200).write(`${JSON.stringify(date_time)}\n\n`);
+                    res.status(200).send();
           }   
-
-
-          
 });
 app.get('/datetime', (req, res) => {
-          res.status(200).json(date_time.date, date_time.time * 1);
-})
+          // console.log(date_time);
+          res.status(200).json(date_time);
+          res.on('close', () => {
+                    date_time.dateTime = 0;
+          });
+});
+
 module.exports = app;
