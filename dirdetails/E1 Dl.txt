@@ -1,0 +1,4 @@
+dbgsw on dl 0
+debug dl 10
+debug dl 12
+debug dl 16

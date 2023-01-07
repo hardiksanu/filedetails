@@ -1,0 +1,22 @@
+app.post('/start', (req, res) => {
+    start_board = { ...req.body };
+    // console.log(start_board );
+    // console.log('Body-data:', start_board);
+    if (start_board !== undefined) {
+        exec('', (error, stdout, stderr) => {
+            if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+            }
+            // console.log(`stdout: ${stdout}`);
+            res.status(200).write(`${JSON.stringify(start_board)}\n\n`);
+            res.status(200).send();
+            return
+        });
+    }
+    res.status(200).send();
+});
