@@ -21,7 +21,7 @@ let event_res;
 let event_data = undefined;
 let freq_data = undefined;
 let freqData;
-let date_time;
+let date_time, start_board , stop_board;
 
 app.get('/file', (req, res) => {
     fs.readdir(directory, (err) => {
@@ -61,7 +61,7 @@ app.delete('/delete', (req, res) => {
 
 app.get('/download/:filename', async (req, res) => {
     let filename = req.params.filename;
-    console.log("filename:", filename);
+    // console.log("filename:", filename);
     const stream = fs.createReadStream(directory + "/" + filename);
     res.setHeader('Content-Type', 'application/bin');
     res.setHeader('Content-Disposition', `inline; filename= ${filename}`);
@@ -121,42 +121,45 @@ app.post('/start', (req, res) => {
     start_board = { ...req.body };
     console.log('Start data:', start_board.key);
     if ((start_board !== undefined)) {
-              res.status(200).write(`${JSON.stringify(start_board)}\n\n`);
+            //   res.status(200).write(`${JSON.stringify(start_board.key)}\n\n`);
               res.status(200).send();
     }
 });
-
 app.get('/startboard', (req, res) => {
-    try {
-              res.status(200).json(start_board.key * 1);
-              res.on('close', () => {
-                        // console.log("Connection closed after send the message");
-                        start_board.key = 2;
-              });
+    if(start_board == undefined) {
+        start_board = 2;
+        res.status(200).json(start_board);
+        res.status(200).send();
+        start_board = undefined;
+        return
     }
-    catch (e) {
-              res.status(400).send(e);
-    };
+    else{
+        res.status(200).json(start_board.key * 1);
+        res.status(200).send();
+        start_board = undefined;
+        }
 });
-app.get('/stop/stopbutton', (req, res) => {
-    stop_board = { ...req.body };
-    console.log('Start data:', stop_board.key);
+app.get('/stop/:stopButton', (req, res) => {
+    stop_board = req.params.stopButton;
+    console.log('Stop data:', stop_board);
     if ((stop_board !== undefined)) {
               res.status(200).write(`${JSON.stringify(stop_board)}\n\n`);
               res.status(200).send();
     }
 });
 app.get('/stopboard', (req, res) => {
-    try {
-              res.status(200).json(stop_board.key * 1);
-              res.on('close', () => {
-                        // console.log("Connection close after stop the board");
-                        stop_board.key = 2;
-              });
+    if(stop_board == undefined) {
+        stop_board = 2;
+        res.status(200).json(stop_board);
+        res.status(200).send();
+        stop_board = undefined;
+        return
     }
-    catch (e) {
-              res.status(400).send(e);
-    }
+    else{
+        res.status(200).json(stop_board * 1);
+        res.status(200).send();
+        stop_board = undefined;
+        }
 });
 app.get('/freq', (req, res) => {
     try {
@@ -171,7 +174,7 @@ app.get('/freq', (req, res) => {
 app.post('/frequency', (req, res) => {
     freq_data = { ...req.body };
     if (freq_data !== undefined) {
-              res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
+            //   res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
               res.status(200).send();
     }
 });
@@ -186,8 +189,7 @@ app.post('/timer', (req, res) => {
 app.get('/datetime', (req, res) => {
     if(date_time == undefined) {
         date_time = 0;
-        res.status(200).write(`${JSON.stringify(date_time)}\n\n`);
-        res.status(200).send();
+        res.status(200).json(date_time);
         date_time = undefined;
         return
     }
