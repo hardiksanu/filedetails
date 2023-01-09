@@ -59,6 +59,15 @@ app.delete('/delete', (req, res) => {
     }
 });
 
+app.get('/download/:filename', async (req, res) => {
+    let filename = req.params.filename;
+    console.log("filename:", filename);
+    const stream = fs.createReadStream(directory + "/" + filename);
+    res.setHeader('Content-Type', 'application/bin');
+    res.setHeader('Content-Disposition', `inline; filename= ${filename}`);
+    stream.pipe(res);
+});
+
 app.get('/deleteall', (req, res) => {
     try {
         for (let fileindir of ls(path.join(directory, "*"))) {
@@ -110,7 +119,7 @@ app.post('/create', (req, res) => {
 });
 app.post('/start', (req, res) => {
     start_board = { ...req.body };
-    // console.log('Body-data:', start_board.key);
+    console.log('Start data:', start_board.key);
     if ((start_board !== undefined)) {
               res.status(200).write(`${JSON.stringify(start_board)}\n\n`);
               res.status(200).send();
@@ -129,9 +138,9 @@ app.get('/startboard', (req, res) => {
               res.status(400).send(e);
     };
 });
-app.post('/stop', (req, res) => {
+app.get('/stop/stopbutton', (req, res) => {
     stop_board = { ...req.body };
-    // console.log('Body-data:', stop_board.key);
+    console.log('Start data:', stop_board.key);
     if ((stop_board !== undefined)) {
               res.status(200).write(`${JSON.stringify(stop_board)}\n\n`);
               res.status(200).send();
