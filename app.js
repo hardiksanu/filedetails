@@ -20,14 +20,13 @@ app.use(cors({ origin: '*' }));
 let event_res;
 let event_data = undefined;
 let freq_data = undefined;
-let date_time, start_board, stop_board, datasendtoweb ;
+let date_time, start_board, stop_board, datasendtoweb;
 
 
 app.get('/file', (req, res) => {
     fs.readdir(directory, (err) => {
         if (err) {
-            res.status(400).send('Unable to find directory: ' + err);
-            return;
+            return res.status(400).send('Unable to find directory: ' + err);
         }
         else {
 
@@ -45,12 +44,10 @@ app.delete('/delete', (req, res) => {
         let { filename } = req.body;
         fs.unlink(directory + "/" + filename, (err) => {
             if (err) {
-                res.status(200).send(err);
-                return;
+                return res.status(200).send(err);
             }
             else {
-                res.status(200).send("File deleted successfully.");
-                return;
+                return res.status(200).send("File deleted successfully.");
             }
         });
     }
@@ -91,12 +88,13 @@ app.get('/event', (req, res) => {
         });
         fs.readFile('./Freq_Other_Data_file/start.json', (err, datainfile) => {
             if (err) {
-                console.log("Error while read file:", err);
-                return;
+                return console.log("Error while read file:", err);
             }
-            try {       
+            try {
+                // console.log("Set frequency data from file", datainfile);
                 datasendtoweb = JSON.parse(datainfile);
-                res.status(200).write(`data: ${JSON.stringify(datasendtoweb)}\n\n`);
+                return res.status(200).write(`data: ${JSON.stringify(datasendtoweb)}\n\n`);
+
             }
             catch (err) {
                 console.log("Error parsing JSON string:", err);
@@ -110,103 +108,84 @@ app.get('/event', (req, res) => {
         res.status(400).send(e);
     };
 });
+
 app.post('/create', (req, res) => {
-    const { Battery_Voltage, Frequency, Temperature, Odo_Count1, Odo_Count2, Odo_Count3 , Set_Frequency} = (req.body);
+    const { Battery_Voltage, Frequency, Temperature, Odo_Count1, Odo_Count2, Odo_Count3, Set_Frequency } = (req.body);
     if (!(Battery_Voltage && Frequency && Temperature && Odo_Count1 && Odo_Count2 && Odo_Count3 && Set_Frequency)) {
-        res.status(400).send("All data is required.");
-        return
+        return res.status(400).send("All data is required.");
     }
     else if (event_res !== undefined) {
         event_data = { ...req.body };
-        // console.log("event_Data:", event_data);
+        console.log("event_Data:", event_data);
         event_res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
         fs.writeFile('./Freq_Other_Data_file/start.json', JSON.stringify(event_data), (error) => {
             if (error) throw error;
         });
-        res.status(200).send();
-        return
+        return res.status(200).send();
     }
-    res.status(200).send();
+    return res.status(200).send();
 });
-app.post('/start', (req, res) => {
-    start_board = { ...req.body };
-    console.log('Start data:', start_board.key);
-    if ((start_board !== undefined)) {
-          res.status(200).write(`${JSON.stringify(start_board.key)}\n\n`);
-        res.status(200).send();
-    }
-});
-app.get('/startboard', (req, res) => {
-    if (start_board == undefined) {
-        start_board = 2;
-        res.status(200).json(start_board);
-        res.status(200).send();
-        start_board = undefined;
-        return
-    }
-    else {
-        res.status(200).json(start_board.key * 1);
-        res.status(200).send();
-        start_board = undefined;
-    }
-});
-app.get('/stop/:stopButton', (req, res) => {
-    stop_board = req.params.stopButton;
-    console.log('Stop data:', stop_board);
-    if ((stop_board !== undefined)) {
-        res.status(200).write(`${JSON.stringify(stop_board)}\n\n`);
-        res.status(200).send();
-    }
-});
-app.get('/stopboard', (req, res) => {
-    if (stop_board == undefined) {
-        stop_board = 2;
-        res.status(200).json(stop_board);
-        res.status(200).send();
-        stop_board = undefined;
-        return
-    }
-    else {
-        res.status(200).json(stop_board * 1);
-        res.status(200).send();
-        stop_board = undefined;
-    }
-});
-app.get('/freq', (req, res) => {
-    try {
-        res.status(200).json(freq_data.freqData * 1);
-        res.status(200).send();
-        return
-    }
-    catch (e) {
-        res.status(400).send(e);
+
+app.get('/start/:startButton', (req, res) => {
+    start_board = req.params.startButton;
+    console.log("Start data received from web:", start_board);
+    if (start_board !== undefined) {
+        exec('dir', (error, stdout, stderr) => {
+            if (error) {
+                return console.log(`error: ${error.message}`);
+            }
+            if (stderr) {
+                return console.log(`stderr: ${stderr}`);
+            }
+            return res.status(200).send(start_board);
+        });
     };
 });
-app.post('/frequency', (req, res) => {
-    freq_data = { ...req.body };
+
+app.get('/stop/:stopButton', (req, res) => {
+     stop_board = req.params.stopButton;
+    console.log("stop data received from web:", stop_board);
+    if (stop_board !== undefined) {
+        exec('dir', (error, stdout, stderr) => {
+            if (error) {
+                return console.log(`error: ${error.message}`);
+            }
+            if (stderr) {
+                return console.log(`stderr: ${stderr}`);
+            }
+            return res.status(200).send(stop_board);
+        });
+    };
+});
+
+app.get('/frequency/:freqData', (req, res) => {
+    freq_data = req.params.freqData;
+    console.log("Received freq data from web:", freq_data);
     if (freq_data !== undefined) {
-            //   res.status(200).write(`${JSON.stringify(freq_data)}\n\n`);
-              res.status(200).send();
-    }
+        exec('dir', (error, stdout, stderr) => {
+            if (error) {
+                return console.log(`error: ${error.message}`);
+            }
+            if (stderr) {
+                return console.log(`stderr: ${stderr}`);
+            }
+            return res.status(200).send(freq_data);
+        });
+    };
 });
-app.post('/timer', (req, res) => {
-    date_time = { ...req.body };
+app.get('/timer/:dateTime', (req, res) => {
+    date_time = req.params.dateTime;
+    console.log("data and Time from web:", date_time);
     if (date_time !== undefined) {
-        res.status(200).write(`${JSON.stringify(date_time)}\n\n`);
-        res.status(200).send();
-    }
-});
-app.get('/datetime', (req, res) => {
-    if (date_time == undefined) {
-        date_time = 0;
-        res.status(200).json(date_time);
-        date_time = undefined;
-        return
-    }
-    else {
-        res.status(200).json(date_time.dateTime);
-        res.status(200).send();
-        date_time = undefined;
+        exec('dir', (error, stdout, stderr) => {
+            if (error) {
+                return console.log(`error: ${error.message}`);
+            }
+            if (stderr) {
+                return console.log(`stderr: ${stderr}`);
+            }
+            return res.status(200).send(`${JSON.stringify(date_time)}`);
+        });
     }
 });
 
