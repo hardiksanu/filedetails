@@ -8,7 +8,7 @@ const ls = require('ls');
 const prettysize = require('prettysize');
 const { exec } = require("child_process");
 // const directory = path.join('C:/Users/Hardik/Desktop/Text_file/');
-const directory = path.join('C:', 'Users', 'Hardik', 'Desktop', 'Text_file', "/");
+const directory = path.join('/','media', 'nvme1', "/");
 
 const cors = require('cors');
 const { dir } = require("console");
@@ -86,7 +86,7 @@ app.get('/event', (req, res) => {
             'Connection': "keep-alive",
             'Content-Type': 'text/event-stream',
         });
-        fs.readFile('./Freq_Other_Data_file/start.json', (err, datainfile) => {
+        fs.readFile('/root/Backend_app/start.json', (err, datainfile) => {
             if (err) {
                 return console.log("Error while read file:", err);
             }
@@ -118,7 +118,7 @@ app.post('/create', (req, res) => {
         event_data = { ...req.body };
         console.log("event_Data:", event_data);
         event_res.status(200).write(`data: ${JSON.stringify(event_data)}\n\n`);
-        fs.writeFile('./Freq_Other_Data_file/start.json', JSON.stringify(event_data), (error) => {
+        fs.writeFile('/root/Backend_app/start.json', JSON.stringify(event_data), (error) => {
             if (error) throw error;
         });
         return res.status(200).send();
@@ -126,43 +126,66 @@ app.post('/create', (req, res) => {
     return res.status(200).send();
 });
 
-app.get('/start', (req, res) => {
-    if (fs.existsSync('./Freq_Other_Data_file/start.txt')) {
-        if (fs.existsSync('./Freq_Other_Data_file/stop.txt')) {
-            fs.unlink('./Freq_Other_Data_file/stop.txt', () => {
-            });
-        }
-        res.status(200).send('Board is already start, please click on stop button to stop the board');
-    }
-    else {
-        let a = exec('dir');
-        fs.writeFile('./Freq_Other_Data_file/start.txt', 'start', (error) => {
-            if (error) throw error;
-        })
-        res.status(200).send();
-    }
-});
-app.get('/stop', (req, res) => {
-    if (fs.existsSync('./Freq_Other_Data_file/stop.txt')) {
-        if (fs.existsSync('./Freq_Other_Data_file/start.txt'))
-            fs.unlink('./Freq_Other_Data_file/start.txt', () => {
-            });
-        res.status(200).send('Board is already stop, please click on start button to start the board');
-    }
-    else {
-        let a = exec('dir');
-        fs.writeFile('./Freq_Other_Data_file/stop.txt', 'Stop', (error) => {
-            if (error) throw error;
+app.get('/start/:startButton', (req, res) => {
+    start_board = req.params.startButton;
+    console.log("Start data received from web:", start_board);
+    if (start_board !== undefined) {
+        exec('/root/GetStart', (error, stdout, stderr) => {
+            if (error) {
+                return console.log(`error: ${error.message}`);
+            }
+            if (stderr) {
+                return console.log(`stderr: ${stderr}`);
+            }
+            return res.status(200).send(start_board);
         });
-        res.status(200).send();
-    }
+    };
+});
+
+/*app.get('/start/:startButton', (req, res) => {
+    start_board = req.params.startButton;
+    console.log("Start data received from web:", start_board);
+    if (start_board !== undefined) {
+        (async () => {
+                let a = await exec('/root/GetStart 192.168.200.25 3030')
+        })()
+    };
+});
+
+
+app.get('/stop/:stopButton', (req, res) => {
+     stop_board = req.params.stopButton;
+    console.log("stop data received from web:", stop_board);
+    if (stop_board !== undefined) {
+	(async () => {
+    		let a = await exec('/root/GetStop
+	})()
+    };
+}); */
+
+
+
+app.get('/stop/:stopButton', (req, res) => {
+     stop_board = req.params.stopButton;
+    console.log("stop data received from web:", stop_board);
+    if (stop_board !== undefined) {
+        exec('/root/GetStop', (error, stdout, stderr) => {
+            if (error) {
+                return console.log(`error: ${error.message}`);
+            }
+            if (stderr) {
+                return console.log(`stderr: ${stderr}`);
+            }
+            return res.status(200).send(stop_board);
+        });
+    };
 });
 
 app.get('/frequency/:freqData', (req, res) => {
     freq_data = req.params.freqData;
     console.log("Received freq data from web:", freq_data);
     if (freq_data !== undefined) {
-        exec('dir', (error, stdout, stderr) => {
+        exec(`/root/GetFrequency ${freq_data}`, (error, stdout, stderr) => {
             if (error) {
                 return console.log(`error: ${error.message}`);
             }
@@ -178,7 +201,7 @@ app.get('/timer/:dateTime', (req, res) => {
     date_time = req.params.dateTime;
     console.log("data and Time from web:", date_time);
     if (date_time !== undefined) {
-        exec('dir', (error, stdout, stderr) => {
+        exec(`/root/GetTime ${date_time}`, (error, stdout, stderr) => {
             if (error) {
                 return console.log(`error: ${error.message}`);
             }
@@ -190,4 +213,25 @@ app.get('/timer/:dateTime', (req, res) => {
     }
 });
 
+/*
+app.get('/frequency/:freqData', (req, res) => {
+    freq_data = req.params.freqData;
+    console.log("Received freq data from web:", freq_data);
+    if (freq_data !== undefined) {
+		  (async () => {                                                  
+                let a = await exec(`/root/GetFrequency ${freq_data}`) 
+        })()       
+            return res.status(200).send(freq_data);
+    };
+});
+app.get('/timer/:dateTime', (req, res) => {
+    date_time = req.params.dateTime;
+    console.log("data and Time from web:", date_time);
+    if (date_time !== undefined) {
+           (async () => {
+                let a = await exec(`/root/GetTime ${date_time}`)
+        })()        
+    };
+});
+*/
 module.exports = app;
