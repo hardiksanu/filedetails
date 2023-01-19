@@ -13,6 +13,9 @@ const directory = path.join('C:', 'Users', 'Hardik', 'Desktop', 'Text_file', "/"
 const cors = require('cors');
 const { dir } = require("console");
 
+app.use(express.static(path.join(__dirname, 'build')));
+
+
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: '*' }));
@@ -23,6 +26,9 @@ let freq_data = undefined;
 let date_time, start_board, stop_board, datasendtoweb;
 
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'))
+});
 app.get('/file', (req, res) => {
     fs.readdir(directory, (err) => {
         if (err) {
@@ -39,6 +45,8 @@ app.get('/file', (req, res) => {
     }
     );
 });
+
+
 app.delete('/delete', (req, res) => {
     try {
         let { filename } = req.body;
@@ -131,8 +139,8 @@ app.get('/start', (req, res) => {
         if (fs.existsSync('./Freq_Other_Data_file/stop.txt')) {
             fs.unlink('./Freq_Other_Data_file/stop.txt', () => {
             });
+            res.status(200).send('Board is already start, please click on stop button to stop the board');
         }
-        res.status(200).send('Board is already start, please click on stop button to stop the board');
     }
     else {
         let a = exec('dir');
@@ -144,10 +152,11 @@ app.get('/start', (req, res) => {
 });
 app.get('/stop', (req, res) => {
     if (fs.existsSync('./Freq_Other_Data_file/stop.txt')) {
-        if (fs.existsSync('./Freq_Other_Data_file/start.txt'))
+        if (fs.existsSync('./Freq_Other_Data_file/start.txt')) {
             fs.unlink('./Freq_Other_Data_file/start.txt', () => {
+                res.status(200).send('Board is already stop, please click on start button to start the board');
             });
-        res.status(200).send('Board is already stop, please click on start button to start the board');
+        }
     }
     else {
         let a = exec('dir');
